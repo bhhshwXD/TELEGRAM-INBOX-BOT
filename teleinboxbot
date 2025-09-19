@@ -1,0 +1,61 @@
+import logging
+from telegram import Update
+from telegram.ext import (
+    ApplicationBuilder, MessageHandler, ContextTypes, filters
+)
+
+# === KONFIGURASI ===
+BOT_TOKEN = "YOUR_BOT_TOKEN_HERE" # ganti dengan bot token kamu
+ADMIN_ID = 1968773070   # ganti dengan user admin telegram kamu
+
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
+
+async def forward_to_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    chat_id = user.id
+    text = update.message.text or "<no text>"
+
+    info = (
+        f"💬 Pesan baru dari user:\n"
+        f"🆔 User ID: {chat_id}\n"
+        f"👤 Nama: {user.full_name}\n"
+        f"🔗 Username: @{user.username if user.username else '—'}\n"
+        f"---\n{text}"
+    )
+    await context.bot.send_message(chat_id=ADMIN_ID, text=info)
+
+async def admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message.reply_to_message:
+        return  
+
+    if update.effective_user.id != ADMIN_ID:
+        return  
+
+    lines = update.message.reply_to_message.text.splitlines()
+    buyer_id = None
+    for line in lines:
+        if line.startswith("🆔 User ID:"):
+            buyer_id = line.split(":")[1].strip()
+            break
+
+    if buyer_id:
+        await context.bot.send_message(chat_id=int(buyer_id), text=update.message.text)
+
+def main():
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+    app.add_handler(
+        MessageHandler(filters.TEXT & ~filters.User(user_id=ADMIN_ID) & filters.ChatType.PRIVATE, forward_to_admin)
+    )
+
+    app.add_handler(
+        MessageHandler(filters.REPLY & filters.User(user_id=ADMIN_ID), admin_reply)
+    )
+
+    print(" Bot aktif. Tekan Ctrl+C untuk berhenti.")
+    app.run_polling()
+
+if __name__ == "__main__":
+    main()
