@@ -6,7 +6,7 @@ from telegram.ext import (
 
 # === KONFIGURASI ===
 BOT_TOKEN = "YOUR_BOT_TOKEN_HERE" # ganti dengan bot token kamu
-ADMIN_ID = 1968773070   # ganti dengan user admin telegram kamu
+ADMIN_ID = 12345678   # ganti dengan user admin telegram kamu
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
